@@ -1,41 +1,39 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuGroup,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+import { DropdownMenu, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { UserNavMenu } from "@/components/ui/user-nav-menu"
+import { UserNavProps } from "@/types/user-nav"
 
-export function UserNav() {
+const defaultUser = {
+  name: "John Doe",
+  email: "john.doe@example.com",
+  avatarUrl: "/placeholder.svg",
+  avatarFallback: "JD",
+}
+
+export function UserNav({
+  className,
+  user = defaultUser,
+  onProfileClick,
+  onSettingsClick,
+  onLogoutClick,
+}: UserNavProps) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+        <Button variant="ghost" className={`relative h-8 w-8 rounded-full ${className}`}>
           <Avatar className="h-8 w-8">
-            <AvatarImage src="/placeholder.svg" alt="User avatar" />
-            <AvatarFallback>JD</AvatarFallback>
+            <AvatarImage src={user.avatarUrl} alt={`${user.name}'s avatar`} />
+            <AvatarFallback>{user.avatarFallback}</AvatarFallback>
           </Avatar>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-56" align="end" forceMount>
-        <DropdownMenuLabel className="font-normal">
-          <div className="flex flex-col space-y-1">
-            <p className="text-sm font-medium leading-none">John Doe</p>
-            <p className="text-xs leading-none text-muted-foreground">john.doe@example.com</p>
-          </div>
-        </DropdownMenuLabel>
-        <DropdownMenuSeparator />
-        <DropdownMenuGroup>
-          <DropdownMenuItem>Profile</DropdownMenuItem>
-          <DropdownMenuItem>Settings</DropdownMenuItem>
-        </DropdownMenuGroup>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem>Log out</DropdownMenuItem>
-      </DropdownMenuContent>
+      <UserNavMenu
+        user={user}
+        onProfileClick={onProfileClick}
+        onSettingsClick={onSettingsClick}
+        onLogoutClick={onLogoutClick}
+      />
     </DropdownMenu>
   )
 }
