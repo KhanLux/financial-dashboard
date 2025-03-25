@@ -116,4 +116,4 @@ For support, email support@example.com or join our Slack channel.
 
 ---
 
-Made with ❤️ by [Your Name] 
+Made with ❤️ by KhanLux 
