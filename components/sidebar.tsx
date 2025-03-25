@@ -42,7 +42,7 @@ export function Sidebar({ className, routes = defaultRoutes, balance = 4550.0, t
         <span className="hidden text-lg font-bold md:inline-block">{title}</span>
       </div>
       <SidebarNav routes={routes} />
-      <SidebarBalance balance={balance} />
+      <SidebarBalance />
     </aside>
   )
 }
