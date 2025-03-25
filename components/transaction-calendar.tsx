@@ -28,13 +28,15 @@ export function TransactionCalendar({ className }: TransactionCalendarProps) {
             <CardDescription>View your transactions by date</CardDescription>
           </CardHeader>
           <CardContent className="p-0 sm:p-6">
-            <div className="rounded-md border bg-card p-1">
+            <div className="rounded-md border bg-card p-1 w-full">
               <Calendar
                 mode="single"
                 selected={selectedDate}
                 onSelect={setSelectedDate}
                 className="w-full"
                 classNames={{
+                  months: "w-full",
+                  month: "w-full space-y-4",
                   day_selected:
                     "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground",
                   day_today: "bg-accent text-accent-foreground",
@@ -42,15 +44,15 @@ export function TransactionCalendar({ className }: TransactionCalendarProps) {
                   day_disabled: "text-muted-foreground opacity-50",
                   day_range_middle: "aria-selected:bg-accent aria-selected:text-accent-foreground",
                   day_hidden: "invisible",
-                  row: "flex w-full mt-2",
-                  head_row: "flex",
-                  head_cell: "text-muted-foreground rounded-md w-9 font-normal text-[0.8rem]",
+                  row: "flex w-full mt-2 justify-between",
+                  head_row: "flex w-full justify-between",
+                  head_cell: "text-muted-foreground rounded-md w-9 font-normal text-[0.8rem] text-center",
                   table: "w-full border-collapse space-y-1",
                   caption: "flex justify-center pt-1 relative items-center",
                   caption_label: "text-sm font-medium",
                   nav: "space-x-1 flex items-center",
                   nav_button: "h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100",
-                  cell: "text-center text-sm relative p-0 focus-within:relative focus-within:z-20",
+                  cell: "text-center text-sm p-0 relative [&:has([aria-selected])]:bg-accent first:[&:has([aria-selected])]:rounded-l-md last:[&:has([aria-selected])]:rounded-r-md focus-within:relative focus-within:z-20 w-9",
                 }}
                 components={{
                   DayContent: ({ date }) => {
@@ -58,7 +60,7 @@ export function TransactionCalendar({ className }: TransactionCalendarProps) {
                     const hasTransactions = transactionDates[dateStr]
 
                     return (
-                      <div className="relative flex h-9 w-9 items-center justify-center p-0">
+                      <div className="relative flex h-9 w-9 items-center justify-center">
                         <span className="z-10">{date.getDate()}</span>
                         {hasTransactions && (
                           <div className="absolute bottom-1 flex gap-1 z-0">
