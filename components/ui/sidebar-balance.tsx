@@ -1,7 +1,14 @@
 import { Wallet } from "lucide-react"
 import { SidebarBalanceProps } from "@/types/sidebar"
+import { useTransactions } from "@/contexts/transaction-context"
 
-export function SidebarBalance({ balance }: SidebarBalanceProps) {
+export function SidebarBalance() {
+  const { transactions } = useTransactions()
+  
+  const balance = transactions.reduce((total, transaction) => {
+    return total + (transaction.type === "income" ? transaction.amount : -transaction.amount)
+  }, 0)
+
   return (
     <div className="mt-auto border-t p-4">
       <div className="flex items-center gap-3 rounded-md bg-muted p-3">
