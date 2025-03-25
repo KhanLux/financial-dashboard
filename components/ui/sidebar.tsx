@@ -12,6 +12,7 @@ import { Input } from "@/components/ui/input"
 import { Separator } from "@/components/ui/separator"
 import { Sheet, SheetContent } from "@/components/ui/sheet"
 import { Skeleton } from "@/components/ui/skeleton"
+import { SidebarRoute } from "@/types/sidebar"
 import {
   Tooltip,
   TooltipContent,
@@ -734,6 +735,12 @@ const SidebarMenuSubButton = React.forwardRef<
   )
 })
 SidebarMenuSubButton.displayName = "SidebarMenuSubButton"
+
+export interface SidebarProps {
+  className?: string
+  routes?: SidebarRoute[]
+  title?: string
+}
 
 export {
   Sidebar,
