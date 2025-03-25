@@ -1,78 +1,26 @@
 "use client"
 
-import { useEffect, useState } from "react"
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts"
-import { format, subMonths, startOfMonth, endOfMonth, isWithinInterval } from "date-fns"
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { useTransactions } from "@/contexts/transaction-context"
 import { AnimatedContainer } from "@/components/ui/animated-container"
+import { EmptyTrends } from "@/components/ui/empty-trends"
+import { useMonthlyTrends } from "@/hooks/use-monthly-trends"
+import { MonthlyTrendsProps } from "@/types/monthly-trends"
 
-export function MonthlyTrends() {
-  const { transactions } = useTransactions()
-  const [chartData, setChartData] = useState<any[]>([])
-  const [isLoaded, setIsLoaded] = useState(false)
-
-  useEffect(() => {
-    // Reset animation state when data changes
-    setIsLoaded(false)
-
-    // Get last 6 months
-    const months = Array.from({ length: 6 }, (_, i) => {
-      const date = subMonths(new Date(), i)
-      return {
-        date,
-        month: format(date, "MMM"),
-        income: 0,
-        expenses: 0,
-      }
-    }).reverse()
-
-    // Calculate totals for each month
-    transactions.forEach((transaction) => {
-      const transactionDate = new Date(transaction.date)
-
-      months.forEach((monthData) => {
-        const start = startOfMonth(monthData.date)
-        const end = endOfMonth(monthData.date)
-
-        if (isWithinInterval(transactionDate, { start, end })) {
-          if (transaction.type === "income") {
-            monthData.income += transaction.amount
-          } else {
-            monthData.expenses += transaction.amount
-          }
-        }
-      })
-    })
-
-    // Format for chart
-    const data = months.map((month) => ({
-      name: month.month,
-      income: Number(month.income.toFixed(2)),
-      expenses: Number(month.expenses.toFixed(2)),
-    }))
-
-    // Simulate loading delay for smoother animation
-    setTimeout(() => {
-      setChartData(data)
-      setIsLoaded(true)
-    }, 300)
-  }, [transactions])
+export function MonthlyTrends({ className, monthsToShow = 6 }: MonthlyTrendsProps) {
+  const { chartData, isLoaded } = useMonthlyTrends(monthsToShow)
 
   return (
-    <Card>
+    <Card className={className}>
       <CardHeader>
         <CardTitle>Monthly Trends</CardTitle>
-        <CardDescription>Income vs. expenses over the last 6 months</CardDescription>
+        <CardDescription>Income vs. expenses over the last {monthsToShow} months</CardDescription>
       </CardHeader>
       <CardContent>
         <AnimatedContainer animation="slide" direction="up" show={isLoaded} className="h-[300px]">
           {chartData.length === 0 ? (
-            <div className="flex h-full flex-col items-center justify-center rounded-md border border-dashed p-8 text-center">
-              <h3 className="mt-2 text-lg font-semibold">No trend data</h3>
-              <p className="mt-1 text-sm text-muted-foreground">Add transactions to see your monthly trends.</p>
-            </div>
+            <EmptyTrends />
           ) : (
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
