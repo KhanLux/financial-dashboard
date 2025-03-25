@@ -1,10 +1,6 @@
 "use client"
 
-import { useState } from "react"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { useForm } from "react-hook-form"
-import { z } from "zod"
-import { CalendarIcon, Plus, CheckCircle } from "lucide-react"
+import { Plus, CalendarIcon } from "lucide-react"
 import { format } from "date-fns"
 
 import { cn } from "@/lib/utils"
@@ -15,79 +11,16 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { useToast } from "@/hooks/use-toast"
-import { useTransactions } from "@/contexts/transaction-context"
 import { AnimatedContainer } from "@/components/ui/animated-container"
+import { TransactionSuccess } from "@/components/ui/transaction-success"
+import { useTransactionForm } from "@/hooks/use-transaction-form"
+import { TransactionFormProps, EXPENSE_CATEGORIES, INCOME_CATEGORIES } from "@/types/transaction-form"
 
-const formSchema = z.object({
-  amount: z.coerce.number().positive("Amount must be positive"),
-  category: z.string().min(1, "Please select a category"),
-  description: z.string().optional(),
-  date: z.date(),
-  type: z.enum(["income", "expense"]),
-})
-
-export function TransactionForm() {
-  const { toast } = useToast()
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [showSuccess, setShowSuccess] = useState(false)
-  const { addTransaction } = useTransactions()
-
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      amount: undefined,
-      category: "",
-      description: "",
-      date: new Date(),
-      type: "expense",
-    },
-  })
-
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    setIsSubmitting(true)
-
-    // Use the context to add the transaction
-    addTransaction(values)
-
-    // Show success animation
-    setShowSuccess(true)
-
-    setTimeout(() => {
-      setShowSuccess(false)
-      setIsSubmitting(false)
-
-      toast({
-        title: "Transaction added",
-        description: `${values.type === "income" ? "Income" : "Expense"} of $${values.amount} added successfully.`,
-      })
-
-      form.reset({
-        amount: undefined,
-        category: "",
-        description: "",
-        date: new Date(),
-        type: "expense",
-      })
-    }, 1500)
-  }
-
-  const expenseCategories = [
-    "Food",
-    "Housing",
-    "Transportation",
-    "Entertainment",
-    "Utilities",
-    "Healthcare",
-    "Education",
-    "Shopping",
-    "Other",
-  ]
-
-  const incomeCategories = ["Salary", "Freelance", "Investments", "Gifts", "Other"]
+export function TransactionForm({ onSuccess }: TransactionFormProps) {
+  const { form, isSubmitting, showSuccess, handleSubmit } = useTransactionForm(onSuccess)
 
   const transactionType = form.watch("type")
-  const categories = transactionType === "income" ? incomeCategories : expenseCategories
+  const categories = transactionType === "income" ? INCOME_CATEGORIES : EXPENSE_CATEGORIES
 
   return (
     <Card>
@@ -97,16 +30,10 @@ export function TransactionForm() {
       </CardHeader>
       <CardContent>
         {showSuccess ? (
-          <AnimatedContainer animation="scale" className="flex h-[350px] flex-col items-center justify-center">
-            <div className="rounded-full bg-green-100 p-3 dark:bg-green-900/30">
-              <CheckCircle className="h-12 w-12 text-green-600 dark:text-green-400" />
-            </div>
-            <h3 className="mt-4 text-xl font-semibold">Transaction Added!</h3>
-            <p className="mt-2 text-center text-muted-foreground">Your transaction has been successfully recorded.</p>
-          </AnimatedContainer>
+          <TransactionSuccess />
         ) : (
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
               <AnimatedContainer animation="fade" delay="none">
                 <FormField
                   control={form.control}
