@@ -1,72 +1,26 @@
 "use client"
 
-import { useEffect, useState } from "react"
-import { format, isSameDay } from "date-fns"
-import { ArrowDownIcon, ArrowUpIcon } from "lucide-react"
+import { format } from "date-fns"
 
 import { Calendar } from "@/components/ui/calendar"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { ScrollArea } from "@/components/ui/scroll-area"
-import type { Transaction } from "@/lib/transactions"
-import { useTransactions } from "@/contexts/transaction-context"
 import { AnimatedContainer } from "@/components/ui/animated-container"
+import { CalendarTransactionList } from "@/components/ui/calendar-transaction-list"
+import { useTransactionCalendar } from "@/hooks/use-transaction-calendar"
+import { TransactionCalendarProps } from "@/types/transaction-calendar"
 
-export function TransactionCalendar() {
-  const { transactions } = useTransactions()
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date())
-  const [selectedDayTransactions, setSelectedDayTransactions] = useState<Transaction[]>([])
-  const [isLoaded, setIsLoaded] = useState(false)
-  const [isTransactionsLoaded, setIsTransactionsLoaded] = useState(false)
-
-  useEffect(() => {
-    // Trigger initial load animation
-    setTimeout(() => {
-      setIsLoaded(true)
-    }, 100)
-  }, [])
-
-  useEffect(() => {
-    if (selectedDate) {
-      // Reset transaction animations when date changes
-      setIsTransactionsLoaded(false)
-
-      const dayTransactions = transactions.filter((transaction) => isSameDay(new Date(transaction.date), selectedDate))
-      setSelectedDayTransactions(dayTransactions)
-
-      // Trigger transaction load animation
-      setTimeout(() => {
-        setIsTransactionsLoaded(true)
-      }, 300)
-    } else {
-      setSelectedDayTransactions([])
-    }
-  }, [selectedDate, transactions])
-
-  // Function to get transaction dates for highlighting in calendar
-  const getTransactionDates = () => {
-    const dates: Record<string, { income: boolean; expense: boolean }> = {}
-
-    transactions.forEach((transaction) => {
-      const dateStr = format(new Date(transaction.date), "yyyy-MM-dd")
-
-      if (!dates[dateStr]) {
-        dates[dateStr] = { income: false, expense: false }
-      }
-
-      if (transaction.type === "income") {
-        dates[dateStr].income = true
-      } else {
-        dates[dateStr].expense = true
-      }
-    })
-
-    return dates
-  }
-
-  const transactionDates = getTransactionDates()
+export function TransactionCalendar({ className }: TransactionCalendarProps) {
+  const {
+    selectedDate,
+    setSelectedDate,
+    selectedDayTransactions,
+    isLoaded,
+    isTransactionsLoaded,
+    transactionDates,
+  } = useTransactionCalendar()
 
   return (
-    <div className="grid gap-6 md:grid-cols-2">
+    <div className={`grid gap-6 md:grid-cols-2 ${className}`}>
       <AnimatedContainer animation="slide" direction="left" show={isLoaded}>
         <Card>
           <CardHeader>
@@ -99,13 +53,13 @@ export function TransactionCalendar() {
                   cell: "text-center text-sm relative p-0 focus-within:relative focus-within:z-20",
                 }}
                 components={{
-                  DayContent: (props) => {
-                    const dateStr = format(props.date, "yyyy-MM-dd")
+                  DayContent: ({ date }) => {
+                    const dateStr = format(date, "yyyy-MM-dd")
                     const hasTransactions = transactionDates[dateStr]
 
                     return (
                       <div className="relative flex h-9 w-9 items-center justify-center p-0">
-                        <span className="z-10">{props.day}</span>
+                        <span className="z-10">{date.getDate()}</span>
                         {hasTransactions && (
                           <div className="absolute bottom-1 flex gap-1 z-0">
                             {hasTransactions.expense && <div className="h-1.5 w-1.5 rounded-full bg-destructive" />}
@@ -129,61 +83,11 @@ export function TransactionCalendar() {
             <CardDescription>Transactions for this date</CardDescription>
           </CardHeader>
           <CardContent>
-            {selectedDayTransactions.length === 0 ? (
-              <div className="flex h-[300px] flex-col items-center justify-center rounded-md border border-dashed p-8 text-center">
-                <h3 className="mt-2 text-lg font-semibold">No transactions</h3>
-                <p className="mt-1 text-sm text-muted-foreground">
-                  {selectedDate ? "There are no transactions for this date." : "Select a date to view transactions."}
-                </p>
-              </div>
-            ) : (
-              <ScrollArea className="h-[300px]">
-                <div className="space-y-4">
-                  {selectedDayTransactions.map((transaction, index) => (
-                    <AnimatedContainer
-                      key={transaction.id}
-                      animation="slide"
-                      direction="right"
-                      delay={index === 0 ? "none" : index === 1 ? "short" : "medium"}
-                      show={isTransactionsLoaded}
-                    >
-                      <div className="flex items-center justify-between rounded-lg border p-4 transition-colors hover:bg-muted/50">
-                        <div className="flex items-center gap-4">
-                          <div
-                            className={`rounded-full p-2.5 ${
-                              transaction.type === "income"
-                                ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300"
-                                : "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300"
-                            }`}
-                          >
-                            {transaction.type === "income" ? (
-                              <ArrowUpIcon className="h-5 w-5" />
-                            ) : (
-                              <ArrowDownIcon className="h-5 w-5" />
-                            )}
-                          </div>
-                          <div>
-                            <p className="font-medium capitalize">{transaction.category}</p>
-                            {transaction.description && (
-                              <p className="text-sm text-muted-foreground">{transaction.description}</p>
-                            )}
-                          </div>
-                        </div>
-                        <div
-                          className={`text-lg font-semibold ${
-                            transaction.type === "income"
-                              ? "text-green-600 dark:text-green-400"
-                              : "text-red-600 dark:text-red-400"
-                          }`}
-                        >
-                          {transaction.type === "income" ? "+" : "-"}${transaction.amount.toFixed(2)}
-                        </div>
-                      </div>
-                    </AnimatedContainer>
-                  ))}
-                </div>
-              </ScrollArea>
-            )}
+            <CalendarTransactionList
+              transactions={selectedDayTransactions}
+              isLoaded={isTransactionsLoaded}
+              selectedDate={selectedDate}
+            />
           </CardContent>
         </Card>
       </AnimatedContainer>
