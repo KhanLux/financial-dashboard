@@ -27,7 +27,7 @@ A modern, responsive financial dashboard built with Next.js and TypeScript, feat
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/yourusername/financial-dashboard.git
+   git clone https://github.com/KhanLux/financial-dashboard.git
    cd financial-dashboard
    ```
 
